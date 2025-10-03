@@ -1,13 +1,27 @@
+# top-most EditorConfig file
 root = true
 
-[*]
-charset = utf-8
-end_of_line = lf
-insert_final_newline = true
-indent_style = space
-indent_size = 4
-
 [*.cs]
-dotnet_diagnostic.IDE0005.severity = warning   # unused usings
-dotnet_diagnostic.CS8618.severity = warning    # nullable init
+indent_style = space
+indent_size = 4          # change to 2 if you want TS-like
+insert_final_newline = true
+end_of_line = lf
+charset = utf-8
+
+# New C# features
+csharp_style_namespace_declarations = file_scoped:suggestion
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = false:suggestion
+
+# Using statements
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = true
+
+# Newlines & braces
 csharp_new_line_before_open_brace = all
+csharp_new_line_between_query_expression_clauses = true
+
+# Organize usings on save (VS/VSCode reads this)
+dotnet_diagnostic.IDE0005.severity = warning   # remove unused using
+dotnet_diagnostic.IDE0055.severity = suggestion # formatting
