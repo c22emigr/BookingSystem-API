@@ -3,41 +3,34 @@ bin/
 obj/
 out/
 
-# VS Code
+# VS Code settings
 .vscode/
 !.vscode/launch.json
 !.vscode/tasks.json
 
-# User-specific
-*.user
+# Visual Studio / Rider
+.vs/
+.idea/
 *.suo
+*.user
+*.rsuser
 
 # Logs
 *.log
-logs/
 
-# Rider / VS / tooling
-.idea/
-.vs/
-*.rsuser
-
-# Coverage / test
+# Test results
 TestResults/
 coverage/
 *.coverage
 *.coveragexml
 
-# SQLite database (generated locally)
-**/booking.db
-**/booking.db-shm
-**/booking.db-wal
+# SQLite database (local only)
+*.db
+*.db-shm
+*.db-wal
 
-# Secrets
+# User secrets (if you use them later)
 secrets.json
 
 # Docker
-**/node_modules/
 docker-data/
-
-# EF snapshots are OK to commit, but not the generated DB
-# Keep Migrations folder tracked
