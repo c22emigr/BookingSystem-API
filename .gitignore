@@ -1,0 +1,43 @@
+# Build output
+bin/
+obj/
+out/
+
+# VS Code
+.vscode/
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# User-specific
+*.user
+*.suo
+
+# Logs
+*.log
+logs/
+
+# Rider / VS / tooling
+.idea/
+.vs/
+*.rsuser
+
+# Coverage / test
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+# SQLite database (generated locally)
+**/booking.db
+**/booking.db-shm
+**/booking.db-wal
+
+# Secrets
+secrets.json
+
+# Docker
+**/node_modules/
+docker-data/
+
+# EF snapshots are OK to commit, but not the generated DB
+# Keep Migrations folder tracked
