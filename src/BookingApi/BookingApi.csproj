@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <!-- EF Core with SQLite -->
+    <PackageReference Include="AutoMapper" Version="12.*" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.*" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.*" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.*">
       <PrivateAssets>all</PrivateAssets>
