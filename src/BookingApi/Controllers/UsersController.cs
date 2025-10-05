@@ -28,7 +28,7 @@ public class UsersController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<UserDto>>> GetAll()
     {
-        var users = await _db.Users.ToListAsync(); // Fetch all users
+        var users = await _db.Users.AsNoTracking().ToListAsync(); // Fetch all users
         return Ok(_mapper.Map<IEnumerable<UserDto>>(users)); // Map users to DTOs and return
     }
 
@@ -51,14 +51,14 @@ public class UsersController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<UserDto>> Create(CreateUserDto dto)
     {
-        var user = _mapper.Map<User>(dto) // Map the incoming DTO to User Model
+        var user = _mapper.Map<User>(dto); // Map the incoming DTO to User Model
 
         _db.Users.Add(user); // Add new user to db context (EF Core)
         await _db.SaveChangesAsync(); // Save changes
 
         var result = _mapper.Map<UserDto>(user); // Map to UserDto
 
-        return CreatedAtAction( // Return 201 created + location
+        return CreatedAtAction( // 201 with location header
             nameof(GetById),
             new { id = user.Id }, result
         );
@@ -68,10 +68,10 @@ public class UsersController : ControllerBase
     // PUT: api/users/{id}
     // ----------------
     [HttpPut("{id:int}")]
-    public async Task<IActionResult<UserDto>> Update(int id, UpdateUserDto dto)
+    public async Task<IActionResult> Update(int id, UpdateUserDto dto)
     {
         if (id <= 0)
-            return BadRequest("Not a valid user ID");
+            return BadRequest("Not a valid user ID"); // 400
 
         var user = await _db.Users.FindAsync(id); // Find user by ID
         if (user == null)
@@ -81,11 +81,11 @@ public class UsersController : ControllerBase
         if (!user.RowVersion.SequenceEqual(dto.RowVersion))
             return Conflict("Concurrency conflict: User has been modified in another process");
 
-        // Map the updated fields
+        // Map the updated fields from DTO to Model
         _mapper.Map(dto, user);
 
         await _db.SaveChangesAsync();
-        return NoContent(); // 204 No Content
+        return NoContent(); // 204
     }
 
     // ----------------
