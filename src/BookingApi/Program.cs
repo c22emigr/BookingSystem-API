@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using BookingApi.Data;
+using BookingApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
+builder.Services.AddScoped<IBookingService, BookingService>();
 
 // Configure EF Core with SQLite
 builder.Services.AddDbContext<BookingDbContext>(options =>
