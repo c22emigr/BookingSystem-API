@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using BookingApi.Models;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
 // DbContext for the Booking system to interact with the database
 
