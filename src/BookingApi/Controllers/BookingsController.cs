@@ -29,12 +29,12 @@ public class BookingsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<BookingDto>>> GetAll()
     {
-        var bookings = await _db.Bookings
+        var booking = await _db.Bookings
             .AsNoTracking()
             .Include(b => b.User) // Include user for booking
             .Include(b => b.Resource) // Include resource for booking
             .ToListAsync(); // Fetch all bookings
-        return Ok(_mapper.Map<IEnumerable<BookingDto>>(bookings)); // Map bookings to DTOs and return
+        return Ok(_mapper.Map<IEnumerable<BookingDto>>(booking)); // Map bookings to DTOs and return
     }
 
     // ----------------
@@ -43,15 +43,15 @@ public class BookingsController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<ActionResult<BookingDto>> GetById(int id)
     {
-        var bookings = await _db.Bookings
+        var booking = await _db.Bookings
             .AsNoTracking()
             .Include(b => b.User) // Include user for booking
             .Include(b => b.Resource) // Include resource for booking
             .FirstOrDefaultAsync(b => b.Id == id); // Find booking by id
-        if (bookings == null)
+        if (booking == null)
             return NotFound("Booking not found"); // 404
 
-        return Ok(_mapper.Map<BookingDto>(bookings)); // Map to DTO and return
+        return Ok(_mapper.Map<BookingDto>(booking)); // Map to DTO and return
     }
 
     // ----------------
