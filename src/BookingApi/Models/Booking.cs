@@ -20,7 +20,7 @@ namespace BookingApi.Models
         public DateTime EndTime { get; set; }  // UTC
 
         [Timestamp] // Optimistic concurrency token to handle concurrent updates
-        public byte[] RowVersion { get; set; } = Array.Empty<byte>();
+        public byte[]? RowVersion { get; set; } // nullable temporary
 
         [ForeignKey(nameof(UserId))]
         public User? User { get; set; }

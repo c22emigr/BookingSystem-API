@@ -34,3 +34,7 @@ secrets.json
 
 # Docker
 docker-data/
+src/BookingApi/Migrations/20251003113113_InitialCreate.cs
+src/BookingApi/Migrations/20251007165335_InitialCreate.cs
+src/BookingApi/Migrations/20251003113113_InitialCreate.cs
+src/BookingApi/Migrations/20251003113113_InitialCreate.cs
