@@ -7,3 +7,7 @@ out/
 **/*.db-shm
 **/*.db-wal
 TestResults/
+.git
+Dockerfile
+docker-compose.yml
+**/node_modules
