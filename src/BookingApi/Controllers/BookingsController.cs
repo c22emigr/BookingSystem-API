@@ -10,8 +10,6 @@ using BookingApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-using SQLitePCL;
-
 namespace BookingApi.Controllers;
 
 [ApiController]
@@ -73,7 +71,10 @@ public class BookingsController : ControllerBase
             var booking = _mapper.Map<Booking>(dto); // Map incoming DTO to Booking Model
             var created = await _service.CreateAsync(booking);
             var result = _mapper.Map<BookingDto>(created);
-            return CreatedAtAction(nameof(GetById), new { id = booking.Id }, result);
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id = booking.Id }, result
+                );
         }
         catch (ArgumentException ex) { return BadRequest(ex.Message); } // Bad parameters
         catch (InvalidOperationException ex) { return Conflict(ex.Message); } // Resource already booked in this time range
@@ -93,7 +94,6 @@ public class BookingsController : ControllerBase
         catch (KeyNotFoundException)
         {
             return NotFound("Booking not found"); // 404
-
         }
         catch (DBConcurrencyException)
         {

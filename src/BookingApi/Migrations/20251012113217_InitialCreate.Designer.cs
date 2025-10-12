@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BookingApi.Migrations
 {
     [DbContext(typeof(BookingDbContext))]
-    [Migration("20251007170528_DefaultRowVersionForBooking")]
-    partial class DefaultRowVersionForBooking
+    [Migration("20251012113217_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

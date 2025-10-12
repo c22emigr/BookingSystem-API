@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BookingApi.Services;
 
-public class BookingService(BookingDbContext db) : IBookingService
+public sealed class BookingService(BookingDbContext db) : IBookingService
 {
     // Create Booking
     public async Task<Booking> CreateAsync(Booking booking, CancellationToken ct = default)

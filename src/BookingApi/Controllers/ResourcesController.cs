@@ -1,8 +1,12 @@
 // CRUD for Resources
+using System.Data;
+
 using AutoMapper;
 using BookingApi.Data;
 using BookingApi.Dtos;
 using BookingApi.Models;
+using BookingApi.Services;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,12 +19,14 @@ public class ResourcesController : ControllerBase
 {
     private readonly BookingDbContext _db;
     private readonly IMapper _mapper;
+    private readonly IResourceService _service;
 
     // Constructor injection to get DbContext and AutoMapper
-    public ResourcesController(BookingDbContext db, IMapper mapper)
+    public ResourcesController(BookingDbContext db, IMapper mapper, IResourceService service)
     {
         _db = db;
         _mapper = mapper;
+        _service = service;
     }
 
     // ----------------
@@ -29,7 +35,9 @@ public class ResourcesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ResourceDto>>> GetAll()
     {
-        var resources = await _db.Resources.AsNoTracking().ToListAsync(); // Fetch all resources
+        var resources = await _db.Resources
+        .AsNoTracking()
+        .ToListAsync(); // Fetch all resources
         return Ok(_mapper.Map<IEnumerable<ResourceDto>>(resources)); // Map resources to DTOs and return
     }
 
@@ -52,17 +60,18 @@ public class ResourcesController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<ResourceDto>> Create(CreateResourceDto dto)
     {
-        var resource = _mapper.Map<Resource>(dto); // Map incoming DTO to Resource model
-
-        _db.Resources.Add(resource); // Add new resource to db context (EF Core)
-        await _db.SaveChangesAsync();
-
-        var result = _mapper.Map<ResourceDto>(resource); // Map to ResourceDto
-
-        return CreatedAtAction( // 201 with location header
-            nameof(GetById),
-            new { id = resource.Id }, result
-        );
+        try
+        {
+            var resource = _mapper.Map<Resource>(dto); // Map incoming DTO to Resource model
+            var created = await _service.CreateAsync(resource);
+            var result = _mapper.Map<ResourceDto>(created);
+            return CreatedAtAction( // 201 with location header
+                nameof(GetById),
+                new { id = resource.Id }, result
+            );
+        }
+        catch (ArgumentException ex) { return BadRequest(ex.Message); }
+        catch (InvalidOperationException ex) { return Conflict(ex.Message); } // Resource already exists
     }
 
     // ----------------
@@ -71,23 +80,16 @@ public class ResourcesController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, UpdateResourceDto dto)
     {
-        if (id <= 0)
-            return BadRequest("Invalid resource ID"); // 400
-
-        var resource = await _db.Resources.FindAsync(id); // Find resource by ID
-        if (resource == null)
-            return NotFound("Resource not found"); // 404
-
-        // Concurrency check with RowVersion
-        if (!resource.RowVersion.SequenceEqual(dto.RowVersion))
-            return Conflict("Concurrency conflict: User has been modified in another process");
-
-        // Map updated fields from DTO to Model
-        _mapper.Map(dto, resource);
-
-        await _db.SaveChangesAsync();
-
-        return NoContent(); // 204
+        var changes = _mapper.Map<Resource>(dto);
+        try
+        {
+            var updated = await _service.UpdateAsync(id, changes); // Find resource by ID
+            return updated ? NoContent() : NotFound("Resource not found");
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(ex.Message);
+        }
     }
 
     // ----------------
@@ -96,13 +98,14 @@ public class ResourcesController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var resource = await _db.Resources.FindAsync(id); // Find resource by ID
-        if (resource == null)
-            return NotFound("Resource not found"); // 404
-
-        _db.Resources.Remove(resource); // Remove resource from db context
-        await _db.SaveChangesAsync();
-
-        return NoContent(); // 204
+        try
+        {
+            await _service.DeleteAsync(id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound("Resource not found");
+        }
     }
 }

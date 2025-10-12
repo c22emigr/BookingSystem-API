@@ -13,6 +13,6 @@ namespace BookingApi.Models
         public string Email { get; set; } = null!;
 
         [Timestamp] // Optimistic concurrency token to handle concurrent updates
-        public byte[]? RowVersion { get; set; } // nullable temporary
+        public byte[]? RowVersion { get; set; } = Array.Empty<byte>();
     }
 }

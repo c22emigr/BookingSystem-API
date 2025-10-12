@@ -10,9 +10,9 @@ namespace BookingApi.Models
         public string Name { get; set; } = null!;
 
         [MaxLength(500)]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [Timestamp] // Optimistic concurrency token to handle concurrent updates
-        public byte[]? RowVersion { get; set; }
+        public byte[]? RowVersion { get; set; } = Array.Empty<byte>();
     }
 }
