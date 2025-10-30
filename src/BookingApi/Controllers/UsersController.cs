@@ -1,8 +1,10 @@
-// CRUD for Users
+ // CRUD for Users
 using AutoMapper;
 using BookingApi.Data;
 using BookingApi.Dtos;
 using BookingApi.Models;
+using BookingApi.Services;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,11 +17,14 @@ public class UsersController : ControllerBase
     private readonly BookingDbContext _db;
     private readonly IMapper _mapper;
 
+    private readonly IUserService _service;
+
     // Constructor injection to get DbContext and AutoMapper
-    public UsersController(BookingDbContext db, IMapper mapper)
+    public UsersController(BookingDbContext db, IMapper mapper, IUserService service)
     {
         _db = db;
         _mapper = mapper;
+        _service = service;
     }
 
     // --------------
@@ -51,16 +56,13 @@ public class UsersController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<UserDto>> Create(CreateUserDto dto)
     {
-        var user = _mapper.Map<User>(dto); // Map the incoming DTO to User Model
-
-        _db.Users.Add(user); // Add new user to db context (EF Core)
-        await _db.SaveChangesAsync(); // Save changes
-
-        var result = _mapper.Map<UserDto>(user); // Map to UserDto
+        var user = _mapper.Map<User>(dto);
+        var created = await _service.CreateAsync(user);
+        var result = _mapper.Map<UserDto>(created);
 
         return CreatedAtAction( // 201 with location header
             nameof(GetById),
-            new { id = user.Id }, result
+            new { id = created.Id }, result
         );
     }
 
@@ -70,22 +72,16 @@ public class UsersController : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, UpdateUserDto dto)
     {
-        if (id <= 0)
-            return BadRequest("Not a valid user ID"); // 400
-
-        var user = await _db.Users.FindAsync(id); // Find user by ID
-        if (user == null)
+        var changes = _mapper.Map<User>(dto);
+        try
+        {
+            var updated = await _service.UpdateAsync(id, changes);
+            return updated ? NoContent() : NotFound("User not found");
+        }
+        catch (KeyNotFoundException)
+        {
             return NotFound("User not found");
-
-        // Concurrency check with RowVersion
-        if (!user.RowVersion.SequenceEqual(dto.RowVersion))
-            return Conflict("Concurrency conflict: User has been modified in another process");
-
-        // Map the updated fields from DTO to Model
-        _mapper.Map(dto, user);
-
-        await _db.SaveChangesAsync();
-        return NoContent(); // 204
+        }
     }
 
     // ----------------
@@ -94,14 +90,11 @@ public class UsersController : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var user = await _db.Users.FindAsync(id); // Find user by ID
-        if (user == null)
-            return NotFound("User not found"); // 404
-
-        _db.Users.Remove(user); // Remove user from db context
-        await _db.SaveChangesAsync();
-
-        return NoContent(); // 204
+        try
+        {
+            await _service.DeleteAsync(id); // Find user by ID
+            return NoContent(); // 204
+        }
+        catch (KeyNotFoundException) { return NotFound("User not found"); }
     }
 }
-

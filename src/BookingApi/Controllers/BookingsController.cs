@@ -73,7 +73,7 @@ public class BookingsController : ControllerBase
             var result = _mapper.Map<BookingDto>(created);
             return CreatedAtAction(
                 nameof(GetById),
-                new { id = booking.Id }, result
+                new { id = created.Id }, result
                 );
         }
         catch (ArgumentException ex) { return BadRequest(ex.Message); } // Bad parameters
