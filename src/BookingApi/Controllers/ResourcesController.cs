@@ -1,12 +1,9 @@
 // CRUD for Resources
 using AutoMapper;
-using BookingApi.Data;
 using BookingApi.Dtos;
 using BookingApi.Models;
 using BookingApi.Services;
-
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace BookingApi.Controllers;
 
@@ -15,14 +12,12 @@ namespace BookingApi.Controllers;
 
 public class ResourcesController : ControllerBase
 {
-    private readonly BookingDbContext _db;
     private readonly IMapper _mapper;
     private readonly IResourceService _service;
 
     // Constructor injection to get DbContext and AutoMapper
-    public ResourcesController(BookingDbContext db, IMapper mapper, IResourceService service)
+    public ResourcesController(IMapper mapper, IResourceService service)
     {
-        _db = db;
         _mapper = mapper;
         _service = service;
     }
@@ -31,11 +26,9 @@ public class ResourcesController : ControllerBase
     // GET: api/resources
     // ----------------
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ResourceDto>>> GetAll()
+    public async Task<ActionResult<IEnumerable<ResourceDto>>> GetAll(CancellationToken ct)
     {
-        var resources = await _db.Resources
-        .AsNoTracking()
-        .ToListAsync();
+        var resources = await _service.GetAllAsync(ct);
         return Ok(_mapper.Map<IEnumerable<ResourceDto>>(resources)); // Map resources to DTOs and return
     }
 
@@ -43,13 +36,11 @@ public class ResourcesController : ControllerBase
     // GET: api/resources/{id}
     // ----------------
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<ResourceDto>> GetById(int id)
+    public async Task<ActionResult<ResourceDto>> GetById(int id, CancellationToken ct)
     {
-        var resource = await _db.Resources.FindAsync(id);
-        if (resource == null)
-            return NotFound("Resource not found");
-
-        return Ok(_mapper.Map<ResourceDto>(resource)); // Map to DTO and return
+        var resource = await _service.GetByIdAsync(id, ct);
+        return resource is null ? NotFound("Resource not found")
+                                : Ok(_mapper.Map<ResourceDto>(resource)); // Map to DTO and return
     }
 
     // ----------------

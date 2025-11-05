@@ -14,15 +14,13 @@ namespace BookingApi.Controllers;
 [Route("api/[controller]")]
 public class UsersController : ControllerBase
 {
-    private readonly BookingDbContext _db;
     private readonly IMapper _mapper;
 
     private readonly IUserService _service;
 
     // Constructor injection to get DbContext and AutoMapper
-    public UsersController(BookingDbContext db, IMapper mapper, IUserService service)
+    public UsersController(IMapper mapper, IUserService service)
     {
-        _db = db;
         _mapper = mapper;
         _service = service;
     }
@@ -31,9 +29,9 @@ public class UsersController : ControllerBase
     // GET: api/users
     // --------------
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<UserDto>>> GetAll()
+    public async Task<ActionResult<IEnumerable<UserDto>>> GetAll(CancellationToken ct)
     {
-        var users = await _db.Users.AsNoTracking().ToListAsync();
+        var users = await _service.GetAllAsync();
         return Ok(_mapper.Map<IEnumerable<UserDto>>(users)); // Map users to DTOs and return
     }
 
@@ -41,13 +39,11 @@ public class UsersController : ControllerBase
     // GET: api/users/{id}
     // ----------------
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<UserDto>> GetById(int id)
+    public async Task<ActionResult<UserDto>> GetById(int id, CancellationToken ct)
     {
-        var user = await _db.Users.FindAsync(id);
-        if (user == null)
-            return NotFound();
-
-        return Ok(_mapper.Map<UserDto>(user)); // Map to DTO and return
+        var user = await _service.GetByIdAsync(id, ct);
+        return user is null ? NotFound()
+                            : Ok(_mapper.Map<UserDto>(user));
     }
 
     // ----------------

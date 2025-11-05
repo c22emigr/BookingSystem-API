@@ -2,13 +2,10 @@
 using System.Data;
 
 using AutoMapper;
-using BookingApi.Data;
 using BookingApi.Dtos;
 using BookingApi.Models;
 using BookingApi.Services;
-
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace BookingApi.Controllers;
 
@@ -17,14 +14,12 @@ namespace BookingApi.Controllers;
 
 public class BookingsController : ControllerBase
 {
-    private readonly BookingDbContext _db;
     private readonly IMapper _mapper;
     private readonly IBookingService _service;
 
     // Constructor injection to get DbContext and AutoMapper
-    public BookingsController(BookingDbContext db, IMapper mapper, IBookingService service)
+    public BookingsController(IMapper mapper, IBookingService service)
     {
-        _db = db;
         _mapper = mapper;
         _service = service;
     }
@@ -33,13 +28,9 @@ public class BookingsController : ControllerBase
     // GET: api/bookings
     // ----------------
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<BookingDto>>> GetAll()
+    public async Task<ActionResult<IEnumerable<BookingDto>>> GetAll(CancellationToken ct)
     {
-        var booking = await _db.Bookings
-            .AsNoTracking()
-            .Include(b => b.User) // Include user for booking
-            .Include(b => b.Resource) // Include resource for booking
-            .ToListAsync(); // Fetch all bookings
+        var booking = await _service.GetAllAsync(ct);
         return Ok(_mapper.Map<IEnumerable<BookingDto>>(booking)); // Map bookings to DTOs and return
     }
 
@@ -47,17 +38,12 @@ public class BookingsController : ControllerBase
     // GET: api/bookings/{id}
     // ----------------
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<BookingDto>> GetById(int id)
+    public async Task<ActionResult<BookingDto>> GetById(int id, CancellationToken ct)
     {
-        var booking = await _db.Bookings
-            .AsNoTracking()
-            .Include(b => b.User)
-            .Include(b => b.Resource)
-            .FirstOrDefaultAsync(b => b.Id == id);
-        if (booking == null)
-            return NotFound("Booking not found");
+        var booking = await _service.GetByIdAsync(id, ct);
+        return booking is null ? NotFound("Booking not found")
+                                : Ok(_mapper.Map<BookingDto>(booking));
 
-        return Ok(_mapper.Map<BookingDto>(booking));
     }
 
     // ----------------
