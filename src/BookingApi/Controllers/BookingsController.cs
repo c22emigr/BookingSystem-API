@@ -51,13 +51,13 @@ public class BookingsController : ControllerBase
     {
         var booking = await _db.Bookings
             .AsNoTracking()
-            .Include(b => b.User) // Include user for booking
-            .Include(b => b.Resource) // Include resource for booking
-            .FirstOrDefaultAsync(b => b.Id == id); // Find booking by id
+            .Include(b => b.User)
+            .Include(b => b.Resource)
+            .FirstOrDefaultAsync(b => b.Id == id);
         if (booking == null)
-            return NotFound("Booking not found"); // 404
+            return NotFound("Booking not found");
 
-        return Ok(_mapper.Map<BookingDto>(booking)); // Map to DTO and return
+        return Ok(_mapper.Map<BookingDto>(booking));
     }
 
     // ----------------
@@ -68,7 +68,7 @@ public class BookingsController : ControllerBase
     {
         try
         {
-            var booking = _mapper.Map<Booking>(dto); // Map incoming DTO to Booking Model
+            var booking = _mapper.Map<Booking>(dto);
             var created = await _service.CreateAsync(booking);
             var result = _mapper.Map<BookingDto>(created);
             return CreatedAtAction(
@@ -88,12 +88,12 @@ public class BookingsController : ControllerBase
     {
         try
         {
-            var updated = await _service.UpdateTimesAsync(id, dto.StartTime, dto.EndTime, dto.RowVersion); // Find booking
+            var updated = await _service.UpdateTimesAsync(id, dto.StartTime, dto.EndTime, dto.RowVersion);
             return Ok(_mapper.Map<BookingDto>(updated));
         }
         catch (KeyNotFoundException)
         {
-            return NotFound("Booking not found"); // 404
+            return NotFound("Booking not found");
         }
         catch (DBConcurrencyException)
         {
@@ -117,8 +117,8 @@ public class BookingsController : ControllerBase
     {
         try
         {
-            await _service.DeleteAsync(id); // Find booking by ID
-            return NoContent(); // 204
+            await _service.DeleteAsync(id);
+            return NoContent();
 
         }
         catch (KeyNotFoundException) { return NotFound("Booking not found"); }

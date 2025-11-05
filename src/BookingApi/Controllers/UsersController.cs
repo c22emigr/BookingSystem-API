@@ -33,7 +33,7 @@ public class UsersController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<UserDto>>> GetAll()
     {
-        var users = await _db.Users.AsNoTracking().ToListAsync(); // Fetch all users
+        var users = await _db.Users.AsNoTracking().ToListAsync();
         return Ok(_mapper.Map<IEnumerable<UserDto>>(users)); // Map users to DTOs and return
     }
 
@@ -43,9 +43,9 @@ public class UsersController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<ActionResult<UserDto>> GetById(int id)
     {
-        var user = await _db.Users.FindAsync(id); // Find the user by ID
+        var user = await _db.Users.FindAsync(id);
         if (user == null)
-            return NotFound(); // Return 404 if user not found
+            return NotFound();
 
         return Ok(_mapper.Map<UserDto>(user)); // Map to DTO and return
     }
@@ -60,7 +60,7 @@ public class UsersController : ControllerBase
         var created = await _service.CreateAsync(user);
         var result = _mapper.Map<UserDto>(created);
 
-        return CreatedAtAction( // 201 with location header
+        return CreatedAtAction(
             nameof(GetById),
             new { id = created.Id }, result
         );
@@ -92,8 +92,8 @@ public class UsersController : ControllerBase
     {
         try
         {
-            await _service.DeleteAsync(id); // Find user by ID
-            return NoContent(); // 204
+            await _service.DeleteAsync(id);
+            return NoContent();
         }
         catch (KeyNotFoundException) { return NotFound("User not found"); }
     }

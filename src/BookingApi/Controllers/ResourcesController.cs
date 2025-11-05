@@ -1,6 +1,4 @@
 // CRUD for Resources
-using System.Data;
-
 using AutoMapper;
 using BookingApi.Data;
 using BookingApi.Dtos;
@@ -37,7 +35,7 @@ public class ResourcesController : ControllerBase
     {
         var resources = await _db.Resources
         .AsNoTracking()
-        .ToListAsync(); // Fetch all resources
+        .ToListAsync();
         return Ok(_mapper.Map<IEnumerable<ResourceDto>>(resources)); // Map resources to DTOs and return
     }
 
@@ -47,9 +45,9 @@ public class ResourcesController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<ActionResult<ResourceDto>> GetById(int id)
     {
-        var resource = await _db.Resources.FindAsync(id); // Find resource by id
+        var resource = await _db.Resources.FindAsync(id);
         if (resource == null)
-            return NotFound("Resource not found"); // 404
+            return NotFound("Resource not found");
 
         return Ok(_mapper.Map<ResourceDto>(resource)); // Map to DTO and return
     }
@@ -62,12 +60,12 @@ public class ResourcesController : ControllerBase
     {
         try
         {
-            var resource = _mapper.Map<Resource>(dto); // Map incoming DTO to Resource model
+            var resource = _mapper.Map<Resource>(dto);
             var created = await _service.CreateAsync(resource);
             var result = _mapper.Map<ResourceDto>(created);
-            return CreatedAtAction( // 201 with location header
+            return CreatedAtAction(
                 nameof(GetById),
-                new { id = resource.Id }, result
+                new { id = created.Id }, result
             );
         }
         catch (ArgumentException ex) { return BadRequest(ex.Message); }
@@ -83,7 +81,7 @@ public class ResourcesController : ControllerBase
         var changes = _mapper.Map<Resource>(dto);
         try
         {
-            var updated = await _service.UpdateAsync(id, changes); // Find resource by ID
+            var updated = await _service.UpdateAsync(id, changes);
             return updated ? NoContent() : NotFound("Resource not found");
         }
         catch (InvalidOperationException ex)
