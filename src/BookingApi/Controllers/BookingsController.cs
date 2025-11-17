@@ -1,5 +1,4 @@
 // CRUD for Bookings
-using System.Data;
 using AutoMapper;
 using BookingApi.Dtos;
 using BookingApi.Models;
@@ -40,8 +39,10 @@ public class BookingsController : ControllerBase
     public async Task<ActionResult<BookingDto>> GetById(int id, CancellationToken ct)
     {
         var booking = await _service.GetByIdAsync(id, ct);
-        return booking is null ? NotFound("Booking not found")
-                                : Ok(_mapper.Map<BookingDto>(booking));
+
+        return booking is null 
+            ? NotFound("Booking not found")
+            : Ok(_mapper.Map<BookingDto>(booking));
 
     }
 
@@ -49,63 +50,36 @@ public class BookingsController : ControllerBase
     // POST: api/bookings
     // ----------------
     [HttpPost]
-    public async Task<ActionResult<BookingDto>> Create(CreateBookingDto dto)
+    public async Task<ActionResult<BookingDto>> Create([FromBody] CreateBookingDto dto, CancellationToken ct)
     {
-        try
-        {
-            var booking = _mapper.Map<Booking>(dto);
-            var created = await _service.CreateAsync(booking);
-            var result = _mapper.Map<BookingDto>(created);
-            return CreatedAtAction(
-                nameof(GetById),
-                new { id = created.Id }, result
-                );
-        }
-        catch (ArgumentException ex) { return BadRequest(ex.Message); } // Bad parameters
-        catch (InvalidOperationException ex) { return Conflict(ex.Message); } // Resource already booked in this time range
+        var booking = _mapper.Map<Booking>(dto);
+        var created = await _service.CreateAsync(booking, ct);
+
+        var result = _mapper.Map<BookingDto>(created);
+
+        return CreatedAtAction(
+            nameof(GetById),
+            new { id = created.Id }, result
+        );
     }
 
     // ----------------
     // PUT: api/bookings/{id}
     // ----------------
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update(int id, UpdateBookingDto dto)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateBookingDto dto, CancellationToken ct)
     {
-        try
-        {
-            var updated = await _service.UpdateTimesAsync(id, dto.StartTime, dto.EndTime, dto.RowVersion);
-            return Ok(_mapper.Map<BookingDto>(updated));
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound("Booking not found");
-        }
-        catch (DBConcurrencyException)
-        {
-            return Conflict("Concurrency conflict");
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Conflict(ex.Message);
-        }
+        var updated = await _service.UpdateTimesAsync(id, dto.StartTime, dto.EndTime, dto.RowVersion, ct);
+        return Ok(_mapper.Map<BookingDto>(updated));
     }
 
     // ----------------
     // DELETE: api/bookings/{id}
     // ----------------
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
-        try
-        {
-            await _service.DeleteAsync(id);
-            return NoContent();
-
-        }
-        catch (KeyNotFoundException) { return NotFound("Booking not found"); }
+        await _service.DeleteAsync(id, ct);
+        return NoContent();
     }
 }

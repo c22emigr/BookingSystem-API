@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using BookingApi.Data;
 using BookingApi.Services;
-using BookingApi.Mapping;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Diagnostics;
 

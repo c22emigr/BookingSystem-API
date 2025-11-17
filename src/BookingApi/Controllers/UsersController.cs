@@ -28,7 +28,7 @@ public class UsersController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<UserDto>>> GetAll(CancellationToken ct)
     {
-        var users = await _service.GetAllAsync();
+        var users = await _service.GetAllAsync(ct);
         return Ok(_mapper.Map<IEnumerable<UserDto>>(users)); // Map users to DTOs and return
     }
 
@@ -39,18 +39,20 @@ public class UsersController : ControllerBase
     public async Task<ActionResult<UserDto>> GetById(int id, CancellationToken ct)
     {
         var user = await _service.GetByIdAsync(id, ct);
-        return user is null ? NotFound()
-                            : Ok(_mapper.Map<UserDto>(user));
+
+        return user is null 
+            ? NotFound()
+            : Ok(_mapper.Map<UserDto>(user));
     }
 
     // ----------------
     // POST: api/users
     // ----------------
     [HttpPost]
-    public async Task<ActionResult<UserDto>> Create(CreateUserDto dto)
+    public async Task<ActionResult<UserDto>> Create([FromBody] CreateUserDto dto, CancellationToken ct)
     {
         var user = _mapper.Map<User>(dto);
-        var created = await _service.CreateAsync(user);
+        var created = await _service.CreateAsync(user, ct);
         var result = _mapper.Map<UserDto>(created);
 
         return CreatedAtAction(
@@ -63,31 +65,21 @@ public class UsersController : ControllerBase
     // PUT: api/users/{id}
     // ----------------
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update(int id, UpdateUserDto dto)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateUserDto dto, CancellationToken ct)
     {
         var changes = _mapper.Map<User>(dto);
-        try
-        {
-            var updated = await _service.UpdateAsync(id, changes);
-            return updated ? NoContent() : NotFound("User not found");
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound("User not found");
-        }
+
+        await _service.UpdateAsync(id, changes, ct);
+        return NoContent();
     }
 
     // ----------------
     // DELETE: api/users/{id}
     // ----------------
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
-        try
-        {
-            await _service.DeleteAsync(id);
-            return NoContent();
-        }
-        catch (KeyNotFoundException) { return NotFound("User not found"); }
+        await _service.DeleteAsync(id, ct);
+        return NoContent();
     }
 }
