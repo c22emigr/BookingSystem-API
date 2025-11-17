@@ -1,6 +1,5 @@
 // CRUD for Bookings
 using System.Data;
-
 using AutoMapper;
 using BookingApi.Dtos;
 using BookingApi.Models;

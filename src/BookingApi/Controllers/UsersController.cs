@@ -1,12 +1,9 @@
  // CRUD for Users
 using AutoMapper;
-using BookingApi.Data;
 using BookingApi.Dtos;
 using BookingApi.Models;
 using BookingApi.Services;
-
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace BookingApi.Controllers;
 
