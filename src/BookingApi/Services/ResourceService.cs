@@ -19,7 +19,7 @@ public sealed class ResourceService(BookingDbContext db) : IResourceService
         // Checks if name already exists
         var exists = await db.Resources.AsNoTracking()
             .AnyAsync(r => r.Name == resource.Name, ct);
-        if (exists) 
+        if (exists)
             throw new InvalidOperationException("A resource with this name already exists");
 
         db.Resources.Add(resource);
@@ -27,10 +27,10 @@ public sealed class ResourceService(BookingDbContext db) : IResourceService
         return resource;
     }
 
-    public async Task<bool> UpdateAsync(int id, Resource changes, CancellationToken ct = default)
+    public async Task UpdateAsync(int id, Resource changes, CancellationToken ct = default)
     {
-        var resource = await db.Resources.FirstOrDefaultAsync(r => r.Id == id, ct);
-        if (resource is null) return false;
+        var resource = await db.Resources.FirstOrDefaultAsync(r => r.Id == id, ct)
+            ?? throw new KeyNotFoundException("Resource not found");
 
         if (!string.Equals(resource.Name, changes.Name, StringComparison.Ordinal))
         {
@@ -44,16 +44,14 @@ public sealed class ResourceService(BookingDbContext db) : IResourceService
         resource.Description = changes.Description;
 
         await db.SaveChangesAsync(ct);
-        return true;
     }
     
-    public async Task<bool> DeleteAsync(int id, CancellationToken ct = default)
+    public async Task DeleteAsync(int id, CancellationToken ct = default)
     {
-        var resource = await db.Resources.FirstOrDefaultAsync(r => r.Id == id, ct);
-        if (resource is null) return false;
+        var resource = await db.Resources.FirstOrDefaultAsync(r => r.Id == id, ct)
+            ?? throw new KeyNotFoundException("Resource not found");
 
         db.Resources.Remove(resource);
         await db.SaveChangesAsync(ct);
-        return true;
-    }   
+    }
 }

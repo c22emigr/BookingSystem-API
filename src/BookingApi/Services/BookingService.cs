@@ -6,6 +6,23 @@ namespace BookingApi.Services;
 
 public sealed class BookingService(BookingDbContext db) : IBookingService
 {
+    // Get All Bookings
+    public async Task<IReadOnlyList<Booking>> GetAllAsync(CancellationToken ct = default) =>
+
+        await db.Bookings
+        .AsNoTracking()
+        .Include(b => b.User)
+        .Include(b => b.Resource)
+        .ToListAsync(ct);
+
+    // Get Booking by Id
+    public async Task<Booking?> GetByIdAsync(int id, CancellationToken ct = default) =>
+        await db.Bookings
+        .AsNoTracking()
+        .Include(b => b.User)
+        .Include(b => b.Resource)
+        .FirstOrDefaultAsync(b => b.Id == id, ct);
+
     // Create Booking
     public async Task<Booking> CreateAsync(Booking booking, CancellationToken ct = default)
     {
@@ -41,6 +58,8 @@ public sealed class BookingService(BookingDbContext db) : IBookingService
         var booking = await db.Bookings.FirstOrDefaultAsync(existing => existing.Id == id, ct)
             ?? throw new KeyNotFoundException("Booking not found");
 
+        db.Entry(booking).Property(b => b.RowVersion).OriginalValue = rowVersion;
+
         var start = ToUtc(startUtc);
         var end = ToUtc(endUtc);
         
@@ -50,10 +69,11 @@ public sealed class BookingService(BookingDbContext db) : IBookingService
         // Check for overlapping bookings
         var hasOverLap = await db.Bookings.AsNoTracking().AnyAsync(existing =>
             existing.ResourceId == booking.ResourceId &&
-            existing.StartTime != booking.EndTime &&
+            existing.Id != booking.Id &&
             booking.StartTime < end &&
-            start < existing.EndTime, ct
-        );
+            start < existing.EndTime, 
+            ct);
+
         if (hasOverLap)
             throw new InvalidOperationException("This resource has already been booked for this time period");
 

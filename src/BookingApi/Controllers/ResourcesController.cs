@@ -70,8 +70,8 @@ public class ResourcesController : ControllerBase
     {
         var changes = _mapper.Map<Resource>(dto);
 
-        var updated = await _service.UpdateAsync(id, changes, ct);
-        return updated ? NoContent() : NotFound("Resource not found");
+        await _service.UpdateAsync(id, changes, ct);
+        return NoContent();
     }
 
     // ----------------

@@ -19,19 +19,21 @@ public sealed class UserService(BookingDbContext db) : IUserService
     {
         var exists = await db.Users.AsNoTracking()
             .AnyAsync(u => u.Email == user.Email, ct);
+
         if (exists)
             throw new InvalidOperationException("This email is already registered to a user");
 
         db.Users.Add(user);
         await db.SaveChangesAsync(ct);
+
         return user;
     }
 
     // Update User
-    public async Task<bool> UpdateAsync(int id, User changes, CancellationToken ct = default)
+    public async Task UpdateAsync(int id, User changes, CancellationToken ct = default)
     {
-        var user = await db.Users.FirstOrDefaultAsync(u => u.Id == id, ct);
-        if (user is null) return false;
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Id == id, ct)
+            ?? throw new KeyNotFoundException("User not found");
 
         if (!string.Equals(user.Email, changes.Email, StringComparison.Ordinal))
         {
@@ -45,17 +47,15 @@ public sealed class UserService(BookingDbContext db) : IUserService
         user.Username = changes.Username;
 
         await db.SaveChangesAsync(ct);
-        return true;
     }
 
     // Delete User
-    public async Task<bool> DeleteAsync(int id, CancellationToken ct = default)
+    public async Task DeleteAsync(int id, CancellationToken ct = default)
     {
-        var user = await db.Users.FirstOrDefaultAsync(u => u.Id == id, ct);
-        if (user is null) return false;
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Id == id, ct)
+            ?? throw new KeyNotFoundException("User not found");
 
         db.Users.Remove(user);
         await db.SaveChangesAsync(ct);
-        return true;
-    }   
+    }
 }

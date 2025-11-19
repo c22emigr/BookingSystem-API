@@ -40,7 +40,7 @@ public class UsersController : ControllerBase
     {
         var user = await _service.GetByIdAsync(id, ct);
 
-        return user is null 
+        return user is null
             ? NotFound()
             : Ok(_mapper.Map<UserDto>(user));
     }
